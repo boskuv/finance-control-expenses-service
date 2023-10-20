@@ -12,6 +12,10 @@ type Config struct {
 	Env         string `yaml:"env" env-default:"development"`
 	StoragePath string `yaml:"storage_path" env-required:"true"`
 	HTTPServer  `yaml:"http_server"`
+	// the server port. Defaults to 8080
+	ServerPort int `yaml:"server_port" env:"SERVER_PORT"`
+	// the data source name (DSN) for connecting to the database. required.
+	DSN string `yaml:"dsn" env:"DSN,secret"`
 }
 
 type HTTPServer struct {
