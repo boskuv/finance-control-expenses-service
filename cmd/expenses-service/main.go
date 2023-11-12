@@ -9,13 +9,14 @@ import (
 	"os"
 	"time"
 
-	"github.com/boskuv/finance-control_expenses-service/internal/config"
 	"github.com/boskuv/finance-control_expenses-service/internal/expenses"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 	routing "github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/go-ozzo/ozzo-routing/v2/content"
 	"github.com/go-ozzo/ozzo-routing/v2/cors"
+
 	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 
 	//"github.com/qiangxue/go-rest-api/internal/auth"
 
@@ -37,15 +38,15 @@ func main() {
 	logger := log.New().With(nil, "version", Version)
 
 	// load application configurations
-	cfg := config.MustLoad()
-	//cfg, err := config.Load(*flagConfig, logger)
+	// cfg := config.MustLoad()
+	// cfg, err := config.Load(*flagConfig, logger)
 	// if err != nil {
 	// 	logger.Errorf("failed to load application configuration: %s", err)
 	// 	os.Exit(-1)
 	// }
 
 	// connect to the database
-	db, err := dbx.MustOpen("postgres", cfg.DSN)
+	db, err := dbx.MustOpen("sqlite3", ":memory:") //cfg.DSN)
 	if err != nil {
 		logger.Error(err)
 		os.Exit(-1)
@@ -59,10 +60,10 @@ func main() {
 	}()
 
 	// build HTTP server
-	address := fmt.Sprintf(":%v", cfg.ServerPort)
+	address := fmt.Sprintf(":%v", "8080") //cfg.ServerPort)
 	hs := &http.Server{
 		Addr:    address,
-		Handler: buildHandler(logger, dbcontext.New(db), cfg),
+		Handler: buildHandler(logger, dbcontext.New(db)), // cfg
 	}
 
 	// start the HTTP server with graceful shutdown
@@ -75,7 +76,7 @@ func main() {
 }
 
 // buildHandler sets up the HTTP routing and builds an HTTP handler.
-func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.Handler {
+func buildHandler(logger log.Logger, db *dbcontext.DB) http.Handler { // , cfg *config.Config
 	router := routing.New()
 
 	router.Use(
